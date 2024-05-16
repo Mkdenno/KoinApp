@@ -6,11 +6,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.koinapp.KoinApp
 import com.example.koinapp.presentation.home.HomeScreen
+import com.example.koinapp.presentation.home.HomeScreenViewModel
 
 @Composable
 fun Navigation(
@@ -18,8 +22,15 @@ fun Navigation(
 ) {
     NavHost(navController = navController, startDestination =Screen.HomeScreen.route ) {
 
-        composable(Screen.HomeScreen.route){
-            HomeScreen()
+        composable(route=Screen.HomeScreen.route){
+            val viewModel= viewModel<HomeScreenViewModel>(
+                factory= viewModelFactoryHelper {
+                    HomeScreenViewModel(KoinApp.appModule.koinRepository)
+                }
+
+            )
+
+            HomeScreen(homeScreenViewModel = viewModel)
         }
         composable(Screen.SearchScreen.route){
 
@@ -59,4 +70,12 @@ sealed class Screen(val route:String){
     data object SearchScreen:Screen("search_screen")
     data object CoinScreen:Screen("coin_screen")
     data object AccountScreen:Screen("account_screen")
+}
+
+fun <VM: ViewModel> viewModelFactoryHelper(initializer: () -> VM): ViewModelProvider.Factory {
+    return object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return initializer() as T
+        }
+    }
 }
